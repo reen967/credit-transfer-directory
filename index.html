@@ -6,7 +6,7 @@
     <title>Credit Transfer Directory</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { font-family: Libre Franklin, sans-serif; }
+        body { font-family: Arial, sans-serif; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f4f4f4; }
@@ -111,22 +111,27 @@
             const end = start + rowsPerPage;
             let filteredCourses = [...courses];
 
-            const sortCredits = document.getElementById("sortCredits").value;
-            if (sortCredits === "low-high") {
-                filteredCourses.sort((a, b) => parseFloat(a.credits_range) - parseFloat(b.credits_range));
-            }
-            if (sortCredits === "high-low") {
-                filteredCourses.sort((a, b) => parseFloat(b.credits_range) - parseFloat(a.credits_range));
+            const selectedCollege = document.getElementById("collegeFilter").value;
+            if (selectedCollege) {
+                filteredCourses = filteredCourses.filter(c => c.college === selectedCollege);
             }
 
-            const paginatedCourses = filteredCourses.slice(start, end);
+            const uniqueCourses = {};
+            filteredCourses.forEach(course => {
+                if (!uniqueCourses[course.course_id]) {
+                    uniqueCourses[course.course_id] = course;
+                }
+            });
+
+            const paginatedCourses = Object.values(uniqueCourses).slice(start, end);
             paginatedCourses.forEach(course => {
+                const creditInfo = selectedCollege ? course.transfer_credits : course.credits_range;
                 tbody.innerHTML += `
                     <tr>
                         <td>${course.provider}</td>
                         <td>${course.course_title}</td>
-                        <td>${course.college || 'N/A'}</td>
-                        <td>${course.credits_range || 'N/A'}</td>
+                        <td>${selectedCollege ? selectedCollege : course.total_colleges || 'N/A'}</td>
+                        <td>${creditInfo || 'N/A'}</td>
                         <td>${course.delivery_method || 'N/A'}</td>
                         <td>${course.price || 'N/A'}</td>
                         <td><a href="course-details.html?id=${course.course_id}">View Details</a></td>
@@ -161,4 +166,5 @@
     </script>
 </body>
 </html>
+
 
