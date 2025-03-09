@@ -65,7 +65,6 @@
         <tbody id="tableBody"></tbody>
     </table>
 
-    <!-- Course Details Modal -->
     <div id="details" class="hidden">
         <h2 id="courseTitle"></h2>
         <p id="courseDescription"></p>
@@ -92,58 +91,27 @@
         let details = [];
 
         async function loadCSV(url) {
-            try {
-                console.log("Fetching:", url);
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to load: ${url}`);
-                const text = await response.text();
-                console.log("CSV Loaded:", text.substring(0, 200)); 
-                return new Promise(resolve => {
-                    Papa.parse(text, {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: results => {
-                            console.log("Parsed Data:", results.data);
-                            resolve(results.data);
-                        }
-                    });
+            const response = await fetch(url);
+            const text = await response.text();
+            return new Promise(resolve => {
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data)
                 });
-            } catch (error) {
-                console.error(error);
-                alert(`Error loading data from ${url}. Check console for details.`);
-                return [];
-            }
+            });
         }
 
         async function init() {
             courses = await loadCSV(courseCSV);
             details = await loadCSV(detailsCSV);
-            populateFilters();
             displayCourses();
         }
 
-        function populateFilters() {
-            const providers = new Set(), colleges = new Set(), deliveries = new Set();
-            courses.forEach(course => {
-                providers.add(course.provider);
-                deliveries.add(course.delivery_method);
-                if (course.accepted_by) {
-                    course.accepted_by.split(", ").forEach(college => colleges.add(college));
-                } else {
-                    console.warn("Missing 'accepted_by' field for course:", course);
-                }
-            });
-
-            document.getElementById("providerFilter").innerHTML = `<option value="">Any</option>` + [...providers].map(p => `<option value="${p}">${p}</option>`).join("");
-            document.getElementById("collegeFilter").innerHTML = `<option value="">Any</option>` + [...colleges].map(c => `<option value="${c}">${c}</option>`).join("");
-            document.getElementById("deliveryFilter").innerHTML = `<option value="">Any</option>` + [...deliveries].map(d => `<option value="${d}">${d}</option>`).join("");
-        }
-
         function displayCourses() {
-            console.log("Displaying Courses:", courses);
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = courses.map(course => `
-                <tr onclick="showDetails('${course.course_title}')">
+                <tr onclick="showDetails('${course.course_id}')">
                     <td>${course.provider}</td>
                     <td>${course.course_title}</td>
                     <td>${course.total_colleges || 'N/A'}</td>
@@ -154,44 +122,13 @@
             `).join("");
         }
 
-        function filterResults() {
-            const provider = document.getElementById("providerFilter").value.toLowerCase();
-            const college = document.getElementById("collegeFilter").value.toLowerCase();
-            const credits = document.getElementById("creditsFilter").value;
-            const delivery = document.getElementById("deliveryFilter").value.toLowerCase();
-            const priceFilter = document.getElementById("priceFilter").value;
-            const search = document.getElementById("search").value.toLowerCase();
-
-            document.getElementById("tableBody").innerHTML = courses.filter(course => {
-                const coursePrice = parseFloat(course.price.replace(/[^0-9.]/g, "")) || 0;
-                let priceMatch = true;
-                if (priceFilter === "under-100") priceMatch = coursePrice < 100;
-                else if (priceFilter === "100-200") priceMatch = coursePrice >= 100 && coursePrice <= 200;
-                else if (priceFilter === "200-500") priceMatch = coursePrice > 200 && coursePrice <= 500;
-                else if (priceFilter === "500+") priceMatch = coursePrice > 500;
-
-                return (!provider || course.provider.toLowerCase() === provider) &&
-                       (!college || (course.accepted_by && course.accepted_by.toLowerCase().includes(college))) &&
-                       (!credits || course.credits_range.includes(credits)) &&
-                       (!delivery || course.delivery_method.toLowerCase() === delivery) &&
-                       (!search || course.course_title.toLowerCase().includes(search)) &&
-                       priceMatch;
-            }).map(course => `
-                <tr onclick="showDetails('${course.course_title}')">
-                    <td>${course.provider}</td>
-                    <td>${course.course_title}</td>
-                    <td>${course.total_colleges || 'N/A'}</td>
-                    <td>${course.credits_range || 'N/A'}</td>
-                    <td>${course.delivery_method || 'N/A'}</td>
-                    <td>${course.price || 'N/A'}</td>
-                </tr>
-            `).join("");
-        }
-
-        function showDetails(title) {
-            const course = courses.find(c => c.course_title === title);
-            document.getElementById("courseTitle").innerText = title;
+        function showDetails(courseId) {
+            const course = courses.find(c => c.course_id === courseId);
+            document.getElementById("courseTitle").innerText = course.course_title;
             document.getElementById("courseDescription").innerText = course.description || "No description available.";
+            document.getElementById("detailsBody").innerHTML = details.filter(d => d.course_id === courseId)
+                .map(d => `<tr><td>${d.college}</td><td>${d.school}</td><td>${d.credits}</td><td>${d.more_info}</td></tr>`).join("");
+            document.getElementById("details").classList.remove("hidden");
         }
 
         init();
