@@ -9,9 +9,10 @@
         body { font-family: Arial, sans-serif; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; cursor: pointer; }
+        th { background-color: #f4f4f4; }
         input, select, button { margin: 5px; padding: 5px; }
-        .hidden { display: none; }
+        .pagination { margin-top: 10px; text-align: center; }
+        .pagination button { margin: 2px; padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -34,27 +35,17 @@
                 <th>Credits</th>
                 <th>Delivery</th>
                 <th>Price</th>
+                <th>Details</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
 
-    <div id="details" class="hidden">
-        <h2 id="courseTitle"></h2>
-        <p id="courseDescription"></p>
-        <h3>Colleges Accepting This Course</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>College</th>
-                    <th>School</th>
-                    <th>Credits</th>
-                    <th>More Info</th>
-                </tr>
-            </thead>
-            <tbody id="detailsBody"></tbody>
-        </table>
-        <button onclick="document.getElementById('details').classList.add('hidden')">Close</button>
+    <!-- Pagination -->
+    <div class="pagination">
+        <button onclick="prevPage()">Previous</button>
+        <span id="pageNumber">Page 1</span>
+        <button onclick="nextPage()">Next</button>
     </div>
 
     <script>
@@ -63,6 +54,8 @@
 
         let courses = [];
         let details = [];
+        let currentPage = 1;
+        const rowsPerPage = 5;
 
         async function loadCSV(url) {
             const response = await fetch(url);
@@ -84,48 +77,55 @@
 
         function displayCourses() {
             const tbody = document.getElementById("tableBody");
-            tbody.innerHTML = courses.map(course => `
-                <tr onclick="showDetails('${course.course_id}')">
-                    <td>${course.provider}</td>
-                    <td>${course.course_title}</td>
-                    <td>${course.total_colleges || 'N/A'}</td>
-                    <td>${course.credits_range || 'N/A'}</td>
-                    <td>${course.delivery_method || 'N/A'}</td>
-                    <td>${course.price || 'N/A'}</td>
-                </tr>
-            `).join("");
-        }
+            tbody.innerHTML = "";
 
-        function filterResults() {
-            const college = document.getElementById("collegeFilter").value.toLowerCase();
-            document.getElementById("tableBody").innerHTML = courses.map(course => {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedCourses = courses.slice(start, end);
+
+            paginatedCourses.forEach(course => {
                 let displayedCredits = course.credits_range || 'N/A';
+                const collegeFilter = document.getElementById("collegeFilter").value.toLowerCase();
 
-                if (college) {
-                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === college);
+                if (collegeFilter) {
+                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === collegeFilter);
                     displayedCredits = matchingDetail ? matchingDetail.credits : "Not Accepted";
                 }
 
-                return `
-                    <tr onclick="showDetails('${course.course_id}')">
+                tbody.innerHTML += `
+                    <tr>
                         <td>${course.provider}</td>
                         <td>${course.course_title}</td>
                         <td>${course.total_colleges || 'N/A'}</td>
                         <td>${displayedCredits}</td>
                         <td>${course.delivery_method || 'N/A'}</td>
                         <td>${course.price || 'N/A'}</td>
+                        <td><a href="course-details.html?id=${course.course_id}">View Details</a></td>
                     </tr>
                 `;
-            }).join("");
+            });
+
+            document.getElementById("pageNumber").innerText = `Page ${currentPage}`;
         }
 
-        function showDetails(courseId) {
-            const course = courses.find(c => c.course_id === courseId);
-            document.getElementById("courseTitle").innerText = course.course_title;
-            document.getElementById("courseDescription").innerText = course.description || "No description available.";
-            document.getElementById("detailsBody").innerHTML = details.filter(d => d.course_id === courseId)
-                .map(d => `<tr><td>${d.college}</td><td>${d.school}</td><td>${d.credits}</td><td>${d.more_info}</td></tr>`).join("");
-            document.getElementById("details").classList.remove("hidden");
+        function filterResults() {
+            currentPage = 1;
+            displayCourses();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayCourses();
+            }
+        }
+
+        function nextPage() {
+            const maxPages = Math.ceil(courses.length / rowsPerPage);
+            if (currentPage < maxPages) {
+                currentPage++;
+                displayCourses();
+            }
         }
 
         init();
