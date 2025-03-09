@@ -20,21 +20,14 @@
     <h1>Credit Transfer Directory</h1>
 
     <!-- Filters -->
-    <label for="collegeFilter">College:</label>
-    <select id="collegeFilter"></select>
+    <label for="providerFilter">Provider:</label>
+    <select id="providerFilter"></select>
 
     <label for="deliveryFilter">Delivery Method:</label>
     <select id="deliveryFilter"></select>
 
     <label for="sortPrice">Sort by Price:</label>
     <select id="sortPrice">
-        <option value="">None</option>
-        <option value="low-high">Lowest to Highest</option>
-        <option value="high-low">Highest to Lowest</option>
-    </select>
-
-    <label for="sortCredits">Sort by Credits:</label>
-    <select id="sortCredits">
         <option value="">None</option>
         <option value="low-high">Lowest to Highest</option>
         <option value="high-low">Highest to Lowest</option>
@@ -66,11 +59,8 @@
     </div>
 
     <script>
-        const courseCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/courses.csv";
-        const detailsCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/details.csv";
-
+        const dataCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/data.csv";
         let courses = [];
-        let details = [];
         let currentPage = 1;
         const rowsPerPage = 5;
 
@@ -87,100 +77,47 @@
         }
 
         async function init() {
-            courses = await loadCSV(courseCSV);
-            details = await loadCSV(detailsCSV);
+            courses = await loadCSV(dataCSV);
             populateFilters();
             displayCourses();
         }
 
         function populateFilters() {
-            const colleges = new Set(), deliveryMethods = new Set();
+            const providers = new Set(), deliveryMethods = new Set();
+            courses.forEach(course => {
+                providers.add(course.provider);
+                deliveryMethods.add(course.delivery_method);
+            });
+
+            document.getElementById("providerFilter").innerHTML = `<option value="">Any</option>` + 
+                [...providers].map(p => `<option value="${p}">${p}</option>`).join("");
             
-            details.forEach(detail => colleges.add(detail.college));
-            courses.forEach(course => deliveryMethods.add(course.delivery_method));
-
-            document.getElementById("collegeFilter").innerHTML = `<option value="">Any</option>` + 
-                [...colleges].map(c => `<option value="${c}">${c}</option>`).join("");
-
             document.getElementById("deliveryFilter").innerHTML = `<option value="">Any</option>` + 
                 [...deliveryMethods].map(d => `<option value="${d}">${d}</option>`).join("");
         }
 
-function displayCourses() {
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "";
-
-    // Group by course_id to avoid duplicate rows
-    const uniqueCourses = {};
-    courses.forEach(course => {
-        if (!uniqueCourses[course.course_id]) {
-            uniqueCourses[course.course_id] = course;
-        }
-    });
-
-    Object.values(uniqueCourses).forEach(course => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${course.provider}</td>
-                <td>${course.course_title}</td>
-                <td>${course.total_colleges || 'N/A'}</td>
-                <td>${course.credits_range || 'N/A'}</td>
-                <td>${course.delivery_method || 'N/A'}</td>
-                <td>${course.price || 'N/A'}</td>
-                <td><a href="course-details.html?id=${course.course_id}">View Details</a></td>
-            </tr>
-        `;
-    });
-}
+        function displayCourses() {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            let filteredCourses = [...courses];
+            const uniqueCourses = {};
 
-            // Apply filters
-            const college = document.getElementById("collegeFilter").value.toLowerCase();
-            const delivery = document.getElementById("deliveryFilter").value.toLowerCase();
-            const sortPrice = document.getElementById("sortPrice").value;
-            const sortCredits = document.getElementById("sortCredits").value;
-
-            if (college) {
-                filteredCourses = filteredCourses.filter(course => 
-                    details.some(d => d.course_id === course.course_id && d.college.toLowerCase() === college)
-                );
-            }
-
-            if (delivery) {
-                filteredCourses = filteredCourses.filter(course => course.delivery_method.toLowerCase() === delivery);
-            }
-
-            // Sorting logic
-            if (sortPrice === "low-high") {
-                filteredCourses.sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, "")) - parseFloat(b.price.replace(/[^0-9.]/g, "")));
-            }
-            if (sortPrice === "high-low") {
-                filteredCourses.sort((a, b) => parseFloat(b.price.replace(/[^0-9.]/g, "")) - parseFloat(a.price.replace(/[^0-9.]/g, "")));
-            }
-            if (sortCredits === "low-high") {
-                filteredCourses.sort((a, b) => parseFloat(a.credits_range) - parseFloat(b.credits_range));
-            }
-            if (sortCredits === "high-low") {
-                filteredCourses.sort((a, b) => parseFloat(b.credits_range) - parseFloat(a.credits_range));
-            }
-
-            const paginatedCourses = filteredCourses.slice(start, end);
-            
-            paginatedCourses.forEach(course => {
-                let displayedCredits = course.credits_range || 'N/A';
-                if (college) {
-                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === college);
-                    displayedCredits = matchingDetail ? matchingDetail.credits : "Not Accepted";
+            courses.forEach(course => {
+                if (!uniqueCourses[course.course_id]) {
+                    uniqueCourses[course.course_id] = course;
                 }
+            });
 
+            const paginatedCourses = Object.values(uniqueCourses).slice(start, end);
+            paginatedCourses.forEach(course => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${course.provider}</td>
                         <td>${course.course_title}</td>
                         <td>${course.total_colleges || 'N/A'}</td>
-                        <td>${displayedCredits}</td>
+                        <td>${course.credits_range || 'N/A'}</td>
                         <td>${course.delivery_method || 'N/A'}</td>
                         <td>${course.price || 'N/A'}</td>
                         <td><a href="course-details.html?id=${course.course_id}">View Details</a></td>
@@ -204,7 +141,7 @@ function displayCourses() {
         }
 
         function nextPage() {
-            const maxPages = Math.ceil(courses.length / rowsPerPage);
+            const maxPages = Math.ceil(Object.values(courses).length / rowsPerPage);
             if (currentPage < maxPages) {
                 currentPage++;
                 displayCourses();
