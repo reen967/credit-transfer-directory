@@ -9,7 +9,7 @@
         body { font-family: Arial, sans-serif; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
+        th { background-color: #f4f4f4; cursor: pointer; }
         input, select { margin: 5px; padding: 5px; }
         .hidden { display: none; }
     </style>
@@ -31,11 +31,34 @@
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
-        <option value="4">4+</option>
+        <option value="4+">4+</option>
     </select>
 
     <label for="deliveryFilter">Delivery Method:</label>
     <select id="deliveryFilter"></select>
+
+    <label for="priceFilter">Price:</label>
+    <select id="priceFilter">
+        <option value="">Any</option>
+        <option value="under-100">Under $100</option>
+        <option value="100-200">$100 - $200</option>
+        <option value="200-500">$200 - $500</option>
+        <option value="500+">Over $500</option>
+    </select>
+
+    <label for="sortPrice">Sort by Price:</label>
+    <select id="sortPrice">
+        <option value="">None</option>
+        <option value="low-high">Lowest to Highest</option>
+        <option value="high-low">Highest to Lowest</option>
+    </select>
+
+    <label for="sortCredits">Sort by Credits:</label>
+    <select id="sortCredits">
+        <option value="">None</option>
+        <option value="low-high">Lowest to Highest</option>
+        <option value="high-low">Highest to Lowest</option>
+    </select>
 
     <input type="text" id="search" placeholder="Search courses..." onkeyup="filterResults()">
 
@@ -47,6 +70,7 @@
                 <th>College(s)</th>
                 <th>Credits</th>
                 <th>Delivery</th>
+                <th>Price</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -108,26 +132,9 @@
             document.getElementById("collegeFilter").innerHTML = `<option value="">Any</option>` + [...colleges].map(c => `<option value="${c}">${c}</option>`).join("");
             document.getElementById("deliveryFilter").innerHTML = `<option value="">Any</option>` + [...deliveries].map(d => `<option value="${d}">${d}</option>`).join("");
 
-            ["providerFilter", "collegeFilter", "creditsFilter", "deliveryFilter"].forEach(id => {
+            ["providerFilter", "collegeFilter", "creditsFilter", "deliveryFilter", "priceFilter", "sortPrice", "sortCredits"].forEach(id => {
                 document.getElementById(id).addEventListener("change", filterResults);
             });
-        }
-
-        function displayCourses() {
-            const tbody = document.getElementById("tableBody");
-            tbody.innerHTML = courses.map(course => {
-                let creditRange = course.credits_range;
-                if (document.getElementById("collegeFilter").value) {
-                    creditRange = "Varies"; // Adjust based on college filter
-                }
-                return `<tr onclick="showDetails('${course.course_title}')">
-                    <td>${course.provider}</td>
-                    <td>${course.course_title}</td>
-                    <td>${course.total_colleges}</td>
-                    <td>${creditRange}</td>
-                    <td>${course.delivery_method}</td>
-                </tr>`;
-            }).join("");
         }
 
         function filterResults() {
@@ -135,32 +142,42 @@
             const college = document.getElementById("collegeFilter").value.toLowerCase();
             const credits = document.getElementById("creditsFilter").value;
             const delivery = document.getElementById("deliveryFilter").value.toLowerCase();
-            const search = document.getElementById("search").value.toLowerCase();
+            const priceFilter = document.getElementById("priceFilter").value;
+            const sortPrice = document.getElementById("sortPrice").value;
+            const sortCredits = document.getElementById("sortCredits").value;
 
-            document.getElementById("tableBody").innerHTML = courses.filter(course =>
-                (!provider || course.provider.toLowerCase() === provider) &&
-                (!college || course.accepted_by.toLowerCase().includes(college)) &&
-                (!credits || course.credits_range.includes(credits)) &&
-                (!delivery || course.delivery_method.toLowerCase() === delivery) &&
-                (!search || course.course_title.toLowerCase().includes(search))
-            ).map(course => `
+            let filteredCourses = courses.filter(course => {
+                const coursePrice = parseFloat(course.price.replace(/[^0-9.]/g, "")) || 0;
+                const creditMin = parseFloat(course.credits_range.split('-')[0]) || 0;
+
+                let priceMatch = true;
+                if (priceFilter === "under-100") priceMatch = coursePrice < 100;
+                else if (priceFilter === "100-200") priceMatch = coursePrice >= 100 && coursePrice <= 200;
+                else if (priceFilter === "200-500") priceMatch = coursePrice > 200 && coursePrice <= 500;
+                else if (priceFilter === "500+") priceMatch = coursePrice > 500;
+
+                return (!provider || course.provider.toLowerCase() === provider) &&
+                       (!college || course.accepted_by.toLowerCase().includes(college)) &&
+                       (!credits || course.credits_range.includes(credits)) &&
+                       (!delivery || course.delivery_method.toLowerCase() === delivery) &&
+                       priceMatch;
+            });
+
+            if (sortPrice === "low-high") filteredCourses.sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, "")) - parseFloat(b.price.replace(/[^0-9.]/g, "")));
+            if (sortPrice === "high-low") filteredCourses.sort((a, b) => parseFloat(b.price.replace(/[^0-9.]/g, "")) - parseFloat(a.price.replace(/[^0-9.]/g, "")));
+            if (sortCredits === "low-high") filteredCourses.sort((a, b) => parseFloat(a.credits_range) - parseFloat(b.credits_range));
+            if (sortCredits === "high-low") filteredCourses.sort((a, b) => parseFloat(b.credits_range) - parseFloat(a.credits_range));
+
+            document.getElementById("tableBody").innerHTML = filteredCourses.map(course => `
                 <tr onclick="showDetails('${course.course_title}')">
                     <td>${course.provider}</td>
                     <td>${course.course_title}</td>
                     <td>${course.total_colleges}</td>
                     <td>${course.credits_range}</td>
                     <td>${course.delivery_method}</td>
+                    <td>${course.price}</td>
                 </tr>
             `).join("");
-        }
-
-        function showDetails(title) {
-            const course = courses.find(c => c.course_title === title);
-            document.getElementById("courseTitle").innerText = title;
-            document.getElementById("courseDescription").innerText = course.description;
-            document.getElementById("detailsBody").innerHTML = details.filter(d => d.course_title === title)
-                .map(d => `<tr><td>${d.college}</td><td>${d.school}</td><td>${d.credits}</td><td>${d.more_info}</td></tr>`).join("");
-            document.getElementById("details").classList.remove("hidden");
         }
 
         init();
