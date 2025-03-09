@@ -1,0 +1,6 @@
+provider,course_title,accepted_by,total_colleges,credits_range,delivery_method,description
+StraighterLine,Written English I,"Harvard University, Babson College, USC",500+,0-3,Online Asynchronous,"An introductory writing course covering composition techniques and research writing."
+Harvard University,Intro to Psychology,"Yale University, MIT, UCLA",300+,1-4,In-person,"A foundational psychology course exploring cognitive, behavioral, and social psychology."
+Sophia Learning,College Algebra,"Arizona State University, Purdue University, NYU",400+,1-3,Online Self-Paced,"An algebra course covering functions, equations, and inequalities."
+DSST,Principles of Statistics,"University of Florida, Penn State, University of Washington",200+,1-3,Exam,"Covers statistical concepts including probability, distributions, and inferential statistics."
+MITx,Introduction to Computer Science,"Stanford University, Georgia Tech, UC Berkeley",350+,2-4,Online Asynchronous,"An introduction to programming and computational thinking using Python."
