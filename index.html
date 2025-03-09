@@ -19,34 +19,8 @@
     <h1>Credit Transfer Directory</h1>
 
     <!-- Filters -->
-    <label for="providerFilter">Provider:</label>
-    <select id="providerFilter"></select>
-
     <label for="collegeFilter">College:</label>
     <select id="collegeFilter"></select>
-
-    <label for="creditsFilter">Credits:</label>
-    <select id="creditsFilter">
-        <option value="">Any</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4+">4+</option>
-    </select>
-
-    <label for="deliveryFilter">Delivery Method:</label>
-    <select id="deliveryFilter"></select>
-
-    <label for="priceFilter">Price:</label>
-    <select id="priceFilter">
-        <option value="">Any</option>
-        <option value="under-100">Under $100</option>
-        <option value="100-200">$100 - $200</option>
-        <option value="200-500">$200 - $500</option>
-        <option value="500+">Over $500</option>
-    </select>
-
-    <br>
 
     <input type="text" id="search" placeholder="Search courses...">
     <button onclick="filterResults()">Apply Filters</button>
@@ -120,6 +94,29 @@
                     <td>${course.price || 'N/A'}</td>
                 </tr>
             `).join("");
+        }
+
+        function filterResults() {
+            const college = document.getElementById("collegeFilter").value.toLowerCase();
+            document.getElementById("tableBody").innerHTML = courses.map(course => {
+                let displayedCredits = course.credits_range || 'N/A';
+
+                if (college) {
+                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === college);
+                    displayedCredits = matchingDetail ? matchingDetail.credits : "Not Accepted";
+                }
+
+                return `
+                    <tr onclick="showDetails('${course.course_id}')">
+                        <td>${course.provider}</td>
+                        <td>${course.course_title}</td>
+                        <td>${course.total_colleges || 'N/A'}</td>
+                        <td>${displayedCredits}</td>
+                        <td>${course.delivery_method || 'N/A'}</td>
+                        <td>${course.price || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join("");
         }
 
         function showDetails(courseId) {
