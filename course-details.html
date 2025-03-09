@@ -34,10 +34,8 @@
 
     <script>
         const courseCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/courses.csv";
-        const detailsCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/details.csv";
-
+        
         let courses = [];
-        let details = [];
 
         async function loadCSV(url) {
             const response = await fetch(url);
@@ -53,7 +51,6 @@
 
         async function init() {
             courses = await loadCSV(courseCSV);
-            details = await loadCSV(detailsCSV);
 
             const urlParams = new URLSearchParams(window.location.search);
             const courseId = urlParams.get("id");
@@ -67,8 +64,16 @@
             document.getElementById("courseTitle").innerText = course.course_title;
             document.getElementById("courseDescription").innerText = course.description || "No description available.";
 
-            document.getElementById("detailsBody").innerHTML = details.filter(d => d.course_id === courseId)
-                .map(d => `<tr><td>${d.college}</td><td>${d.school}</td><td>${d.credits}</td><td>${d.more_info}</td></tr>`).join("");
+            // Show all colleges that accept this course
+            const filteredDetails = courses.filter(c => c.course_id === courseId);
+            document.getElementById("detailsBody").innerHTML = filteredDetails.map(d => `
+                <tr>
+                    <td>${d.college}</td>
+                    <td>${d.school}</td>
+                    <td>${d.transfer_credits}</td>
+                    <td>${d.more_info}</td>
+                </tr>
+            `).join("");
         }
 
         init();
