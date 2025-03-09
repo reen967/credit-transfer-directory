@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+
+    <h1 id="courseTitle"></h1>
+    <p id="courseDescription"></p>
+
+    <h2>Colleges Accepting This Course</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>College</th>
+                <th>School</th>
+                <th>Credits</th>
+                <th>More Info</th>
+            </tr>
+        </thead>
+        <tbody id="detailsBody"></tbody>
+    </table>
+
+    <a href="index.html">Back to Courses</a>
+
+    <script>
+        const courseCSV = "https://raw.githubusercontent.com/yourusername/yourrepo/main/data/courses.csv";
+        const detailsCSV = "https://raw.githubusercontent.com/yourusername/yourrepo/main/data/details.csv";
+
+        let courses = [];
+        let details = [];
+
+        async function loadCSV(url) {
+            const response = await fetch(url);
+            const text = await response.text();
+            return new Promise(resolve => {
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data)
+                });
+            });
+        }
+
+        async function init() {
+            courses = await loadCSV(courseCSV);
+            details = await loadCSV(detailsCSV);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get("id");
+
+            const course = courses.find(c => c.course_id === courseId);
+            if (!course) {
+                document.body.innerHTML = "<h1>Course Not Found</h1><a href='index.html'>Back to Courses</a>";
+                return;
+            }
+
+            document.getElementById("courseTitle").innerText = course.course_title;
+            document.getElementById("courseDescription").innerText = course.description || "No description available.";
+
+            document.getElementById("detailsBody").innerHTML = details.filter(d => d.course_id === courseId)
+                .map(d => `<tr><td>${d.college}</td><td>${d.school}</td><td>${d.credits}</td><td>${d.more_info}</td></tr>`).join("");
+        }
+
+        init();
+    </script>
+</body>
+</html>
