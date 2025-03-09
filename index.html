@@ -6,7 +6,7 @@
     <title>Credit Transfer Directory</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; }
+        body { font-family: Libre Franklin, sans-serif; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f4f4f4; }
@@ -20,14 +20,21 @@
     <h1>Credit Transfer Directory</h1>
 
     <!-- Filters -->
-    <label for="providerFilter">Provider:</label>
-    <select id="providerFilter"></select>
+    <label for="collegeFilter">College:</label>
+    <select id="collegeFilter"></select>
 
     <label for="deliveryFilter">Delivery Method:</label>
     <select id="deliveryFilter"></select>
 
     <label for="sortPrice">Sort by Price:</label>
     <select id="sortPrice">
+        <option value="">None</option>
+        <option value="low-high">Lowest to Highest</option>
+        <option value="high-low">Highest to Lowest</option>
+    </select>
+
+    <label for="sortCredits">Sort by Credits:</label>
+    <select id="sortCredits">
         <option value="">None</option>
         <option value="low-high">Lowest to Highest</option>
         <option value="high-low">Highest to Lowest</option>
@@ -83,14 +90,14 @@
         }
 
         function populateFilters() {
-            const providers = new Set(), deliveryMethods = new Set();
+            const colleges = new Set(), deliveryMethods = new Set();
             courses.forEach(course => {
-                providers.add(course.provider);
+                colleges.add(course.college);
                 deliveryMethods.add(course.delivery_method);
             });
 
-            document.getElementById("providerFilter").innerHTML = `<option value="">Any</option>` + 
-                [...providers].map(p => `<option value="${p}">${p}</option>`).join("");
+            document.getElementById("collegeFilter").innerHTML = `<option value="">Any</option>` + 
+                [...colleges].map(c => `<option value="${c}">${c}</option>`).join("");
             
             document.getElementById("deliveryFilter").innerHTML = `<option value="">Any</option>` + 
                 [...deliveryMethods].map(d => `<option value="${d}">${d}</option>`).join("");
@@ -102,21 +109,23 @@
             
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            const uniqueCourses = {};
+            let filteredCourses = [...courses];
 
-            courses.forEach(course => {
-                if (!uniqueCourses[course.course_id]) {
-                    uniqueCourses[course.course_id] = course;
-                }
-            });
+            const sortCredits = document.getElementById("sortCredits").value;
+            if (sortCredits === "low-high") {
+                filteredCourses.sort((a, b) => parseFloat(a.credits_range) - parseFloat(b.credits_range));
+            }
+            if (sortCredits === "high-low") {
+                filteredCourses.sort((a, b) => parseFloat(b.credits_range) - parseFloat(a.credits_range));
+            }
 
-            const paginatedCourses = Object.values(uniqueCourses).slice(start, end);
+            const paginatedCourses = filteredCourses.slice(start, end);
             paginatedCourses.forEach(course => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${course.provider}</td>
                         <td>${course.course_title}</td>
-                        <td>${course.total_colleges || 'N/A'}</td>
+                        <td>${course.college || 'N/A'}</td>
                         <td>${course.credits_range || 'N/A'}</td>
                         <td>${course.delivery_method || 'N/A'}</td>
                         <td>${course.price || 'N/A'}</td>
@@ -152,3 +161,4 @@
     </script>
 </body>
 </html>
+
