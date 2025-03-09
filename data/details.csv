@@ -1,23 +1,22 @@
-course_title,college,school,credits,more_info
-Written English I,Harvard University,Extension School,3,General Elective
-Written English I,Babson College,School of Business,2,Core Curriculum
-Written English I,University of Southern California,Professional Studies College,4,Written Communication Requirement
-Intro to Psychology,Yale University,Department of Psychology,3,Social Science Requirement
-Intro to Psychology,MIT,School of Humanities,2,Elective Credit
-Intro to Psychology,UCLA,College of Letters and Science,4,General Education
-Business Law,NYU,Stern School of Business,3,Core Business Course
-Business Law,Stanford,Graduate School of Business,2,Elective
-Business Law,Columbia,Law School,3,Legal Foundations Requirement
-Calculus I,Harvard University,Math Department,4,Mathematics Core
-Calculus I,MIT,School of Engineering,3,Prerequisite for Engineering Courses
-Calculus I,UCLA,College of Science,3,Required for STEM Majors
-College Algebra,University of Texas,Math Department,3,General Math Requirement
-College Algebra,Penn State,Science College,3,Math Core Course
-College Algebra,Arizona State,Online Learning School,3,General Elective
-Ethics in America,Notre Dame,Philosophy Department,2,Ethics Requirement
-Ethics in America,Duke University,Divinity School,3,Core Religious Studies
-Ethics in America,Georgetown,Political Science Department,3,Political Ethics Elective
-Introduction to Statistics,UC Berkeley,Statistics Department,3,Data Analysis Core
-Introduction to Statistics,Northwestern,School of Business,3,Quantitative Reasoning Requirement
-Introduction to Statistics,University of Michigan,Social Sciences,3,General Elective
-
+course_id,college,school,credits,more_info
+c1,Harvard University,Extension School,3,General Elective
+c1,Babson College,School of Business,2,Core Curriculum
+c1,University of Southern California,Professional Studies College,4,Written Communication Requirement
+c2,Yale University,Department of Psychology,3,Social Science Requirement
+c2,MIT,School of Humanities,2,Elective Credit
+c2,UCLA,College of Letters and Science,4,General Education
+c3,NYU,Stern School of Business,3,Core Business Course
+c3,Stanford,Graduate School of Business,2,Elective
+c3,Columbia,Law School,3,Legal Foundations Requirement
+c4,Harvard University,Math Department,4,Mathematics Core
+c4,MIT,School of Engineering,3,Prerequisite for Engineering Courses
+c4,UCLA,College of Science,3,Required for STEM Majors
+c5,University of Texas,Math Department,3,General Math Requirement
+c5,Penn State,Science College,3,Math Core Course
+c5,Arizona State,Online Learning School,3,General Elective
+c6,Notre Dame,Philosophy Department,2,Ethics Requirement
+c6,Duke University,Divinity School,3,Core Religious Studies
+c6,Georgetown,Political Science Department,3,Political Ethics Elective
+c7,UC Berkeley,Statistics Department,3,Data Analysis Core
+c7,Northwestern,School of Business,3,Quantitative Reasoning Requirement
+c7,University of Michigan,Social Sciences,3,General Elective
