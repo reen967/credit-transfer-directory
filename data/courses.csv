@@ -1,6 +1,6 @@
 provider,course_title,accepted_by,total_colleges,credits_range,delivery_method,price,description
 StraighterLine,Written English I,"Harvard University, Babson College, USC",500+,0-3,Online Asynchronous,$79/month,"An introductory writing course covering composition techniques and research writing."
-Harvard University,Intro to Psychology,"Yale University, MIT, UCLA",300+,1-4,In-person,$1,200,"A foundational psychology course exploring cognitive, behavioral, and social psychology."
+Harvard University,Intro to Psychology,"Yale University, MIT, UCLA",300+,1-4,In-person,"$1,200","A foundational psychology course exploring cognitive, behavioral, and social psychology."
 Study.com,Business Law,"NYU, Stanford, Columbia",200+,2-3,Online Asynchronous,$199/month,"Covers legal principles affecting businesses, including contracts, ethics, and dispute resolution."
 Coursera,Calculus I,"Harvard University, MIT, UCLA",150+,1-4,Online Synchronous,$49/month,"An introduction to limits, derivatives, and integrals with real-world applications."
 CLEP,College Algebra,"University of Texas, Penn State, Arizona State",100+,3,Exam,$89,"A standardized exam covering fundamental algebra concepts."
