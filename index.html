@@ -23,6 +23,23 @@
     <label for="collegeFilter">College:</label>
     <select id="collegeFilter"></select>
 
+    <label for="deliveryFilter">Delivery Method:</label>
+    <select id="deliveryFilter"></select>
+
+    <label for="sortPrice">Sort by Price:</label>
+    <select id="sortPrice">
+        <option value="">None</option>
+        <option value="low-high">Lowest to Highest</option>
+        <option value="high-low">Highest to Lowest</option>
+    </select>
+
+    <label for="sortCredits">Sort by Credits:</label>
+    <select id="sortCredits">
+        <option value="">None</option>
+        <option value="low-high">Lowest to Highest</option>
+        <option value="high-low">Highest to Lowest</option>
+    </select>
+
     <input type="text" id="search" placeholder="Search courses...">
     <button onclick="filterResults()">Apply Filters</button>
 
@@ -50,7 +67,7 @@
 
     <script>
         const courseCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/courses.csv";
-        const detailsCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/data/details.csv";
+        const detailsCSV = "https://raw.githubusercontent.com/reen967/credit-transfer-directory/main/data/details.csv";
 
         let courses = [];
         let details = [];
@@ -72,7 +89,21 @@
         async function init() {
             courses = await loadCSV(courseCSV);
             details = await loadCSV(detailsCSV);
+            populateFilters();
             displayCourses();
+        }
+
+        function populateFilters() {
+            const colleges = new Set(), deliveryMethods = new Set();
+            
+            details.forEach(detail => colleges.add(detail.college));
+            courses.forEach(course => deliveryMethods.add(course.delivery_method));
+
+            document.getElementById("collegeFilter").innerHTML = `<option value="">Any</option>` + 
+                [...colleges].map(c => `<option value="${c}">${c}</option>`).join("");
+
+            document.getElementById("deliveryFilter").innerHTML = `<option value="">Any</option>` + 
+                [...deliveryMethods].map(d => `<option value="${d}">${d}</option>`).join("");
         }
 
         function displayCourses() {
@@ -81,14 +112,44 @@
 
             const start = (currentPage - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            const paginatedCourses = courses.slice(start, end);
+            let filteredCourses = [...courses];
 
+            // Apply filters
+            const college = document.getElementById("collegeFilter").value.toLowerCase();
+            const delivery = document.getElementById("deliveryFilter").value.toLowerCase();
+            const sortPrice = document.getElementById("sortPrice").value;
+            const sortCredits = document.getElementById("sortCredits").value;
+
+            if (college) {
+                filteredCourses = filteredCourses.filter(course => 
+                    details.some(d => d.course_id === course.course_id && d.college.toLowerCase() === college)
+                );
+            }
+
+            if (delivery) {
+                filteredCourses = filteredCourses.filter(course => course.delivery_method.toLowerCase() === delivery);
+            }
+
+            // Sorting logic
+            if (sortPrice === "low-high") {
+                filteredCourses.sort((a, b) => parseFloat(a.price.replace(/[^0-9.]/g, "")) - parseFloat(b.price.replace(/[^0-9.]/g, "")));
+            }
+            if (sortPrice === "high-low") {
+                filteredCourses.sort((a, b) => parseFloat(b.price.replace(/[^0-9.]/g, "")) - parseFloat(a.price.replace(/[^0-9.]/g, "")));
+            }
+            if (sortCredits === "low-high") {
+                filteredCourses.sort((a, b) => parseFloat(a.credits_range) - parseFloat(b.credits_range));
+            }
+            if (sortCredits === "high-low") {
+                filteredCourses.sort((a, b) => parseFloat(b.credits_range) - parseFloat(a.credits_range));
+            }
+
+            const paginatedCourses = filteredCourses.slice(start, end);
+            
             paginatedCourses.forEach(course => {
                 let displayedCredits = course.credits_range || 'N/A';
-                const collegeFilter = document.getElementById("collegeFilter").value.toLowerCase();
-
-                if (collegeFilter) {
-                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === collegeFilter);
+                if (college) {
+                    const matchingDetail = details.find(d => d.course_id === course.course_id && d.college.toLowerCase() === college);
                     displayedCredits = matchingDetail ? matchingDetail.credits : "Not Accepted";
                 }
 
@@ -132,4 +193,3 @@
     </script>
 </body>
 </html>
-
