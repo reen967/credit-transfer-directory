@@ -1,7 +1,0 @@
-course_id,provider,course_title,total_colleges,credits_range,delivery_method,price,description,college,school,transfer_credits,more_info
-c1,StraighterLine,Written English I,500+,0-3,Online Asynchronous,$79/month,"Introductory writing course","Harvard University","Extension School",3,"General Elective"
-c1,StraighterLine,Written English I,500+,0-3,Online Asynchronous,$79/month,"Introductory writing course","Babson College","School of Business",2,"Core Curriculum"
-c1,StraighterLine,Written English I,500+,0-3,Online Asynchronous,$79/month,"Introductory writing course","USC","Professional Studies College",4,"Written Communication Requirement"
-c2,Harvard University,Intro to Psychology,300+,1-4,In-person,"$1,200","Psychology fundamentals","Yale University","Department of Psychology",3,"Social Science Requirement"
-c2,Harvard University,Intro to Psychology,300+,1-4,In-person,"$1,200","Psychology fundamentals","MIT","School of Humanities",2,"Elective Credit"
-c2,Harvard University,Intro to Psychology,300+,1-4,In-person,"$1,200","Psychology fundamentals","UCLA","College of Letters and Science",4,"General Education"
